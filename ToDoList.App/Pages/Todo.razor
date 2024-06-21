@@ -1,0 +1,57 @@
+@* Esto es un comentario en razor. (No acepta comentarios inline)*@
+@* DIRECTIVAS Y USINGS *@
+
+
+@page "/todo"
+@using global::ToDoList.App
+@using global::ToDoList.App.DTO
+@inject LocalStorageAccessor LocalStorageAccessor
+
+@* Titulo de la página *@
+<PageTitle>Todo</PageTitle>
+
+@* Encabezado y lista de tareas *@
+<h1>Todo</h1>
+@foreach (TodoTask item in tasks)
+
+{
+    <p><input type="checkbox" @bind="item.Completed" @onclick="SaveAsync" /> @item</p>
+}
+<input type="text" @bind="TaskText" />
+<button class="btn btn-primary" @onclick="AddTaskAsync">Add</button>
+
+@* Codigo en C# *@
+@code {
+    private List<TodoTask> tasks = new();
+
+    private string? TaskText { get; set; } // Propiedad nulleable donde se guarda el string de la tarea a añadir
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Método que se ejecuta después de que la página se ha renderizado. Se ejecuta una vez si firstRender es verdadero.
+        
+        if (firstRender)
+        {
+            // Cargar tareas del almacenamiento local
+            var storageTasks = await LocalStorageAccessor.GetValueAsync<List<TodoTask>>("todos");
+            foreach (TodoTask t in storageTasks) tasks.Add(t); // Añade cada tarea recuperada a la lista tasks.
+            StateHasChanged(); // Notifica al componente que su estado ha cambiado y que debe renderizarse nuevamente.
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        // Método que se llama cuando se hace clic en un checkbox para marcar una tarea como completada o no.
+
+        await Task.Delay(1); // Esto esta feo, NO HACERLO
+        await LocalStorageAccessor.SetValueAsync<List<TodoTask>>("todos", tasks);
+    }
+    private async Task AddTaskAsync()
+    {
+        // Método que se ejecuta cuando se hace clic en el botón "Add".
+
+        tasks.Add(new TodoTask { Text = TaskText });
+        await LocalStorageAccessor.SetValueAsync<List<TodoTask>>("todos", tasks);
+        TaskText = "";
+    }
+}
