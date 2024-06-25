@@ -4,7 +4,7 @@
 
 @page "/todo"
 @using global::ToDoList.App
-@using global::ToDoList.App.DTO
+@using global::ToDoList.DTO
 @inject LocalStorageAccessor LocalStorageAccessor
 
 @* Titulo de la página *@
@@ -33,7 +33,7 @@
         if (firstRender)
         {
             // Cargar tareas del almacenamiento local
-            var storageTasks = await LocalStorageAccessor.GetValueAsync<List<TodoTask>>("todos");
+            tasks = await Http.GetFromJsonAsync<List<TodoTask>>("https://localhost");
             foreach (TodoTask t in storageTasks) tasks.Add(t); // Añade cada tarea recuperada a la lista tasks.
             StateHasChanged(); // Notifica al componente que su estado ha cambiado y que debe renderizarse nuevamente.
         }
